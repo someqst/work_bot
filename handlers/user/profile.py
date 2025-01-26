@@ -55,7 +55,7 @@ async def get_my_jobs_emp(call: CallbackQuery):
 @router.callback_query(F.data.startswith('emp_'))
 async def select_job(call: CallbackQuery):
     await call.answer()
-    await bot.send_message(call.from_user.id, f'Ты выбрал работу {(call.data).split('_')[1]}')
+    await bot.send_message(call.from_user.id, f'Ты выбрал работу {(call.data).split("_")[1]}')
 
 
 

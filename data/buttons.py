@@ -131,6 +131,7 @@ settings_kb = InlineKeyboardBuilder()
 settings_kb.button(text='Изменить роль', callback_data='change_role')
 settings_kb.button(text='Изменить локацию', callback_data='change_location')
 settings_kb.button(text='Изменить описание профиля', callback_data='change_about')
+settings_kb.adjust(1)
 
 
 dont_metter = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Не важно')]])

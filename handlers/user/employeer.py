@@ -49,8 +49,6 @@ async def enter_price(message: Message, state: FSMContext):
     
     user = await db.get_user(message.from_user.id)
     
-    print(user.balance_deposit)
-    print(int(message.text))
     if int(message.text) > user.balance_deposit:
         return await message.answer('Сначала пополните баланс на нужную сумму.')
     
@@ -59,7 +57,6 @@ async def enter_price(message: Message, state: FSMContext):
     if await is_changeble(state, message.from_user.id):
         return
 
-    await db.get_employeer_deposit(message.from_user.id, int(message.text))
     await message.answer('Введите заголовок, который увидит работник. *Не более 150 символов*', parse_mode='Markdown')
     await state.set_state(Employeer.insert_title)
 
@@ -100,6 +97,7 @@ async def publish_work_emp(call: CallbackQuery, state: FSMContext):
     description = data.get('description')
 
     await db.create_work(call.from_user.id, location, work_time, price, title, description)
+    await db.get_employeer_deposit(call.from_user.id, price)
     await state.clear()
     return await bot.send_message(call.from_user.id, 'Работа успешно размещена. Посмотреть можно в /profile (перед этим будет оплата, но пока MVP)')
 
