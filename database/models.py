@@ -40,9 +40,9 @@ class WorkProcess(Base):
     id = mapped_column(ForeignKey(Work.id), primary_key=True)
     title = mapped_column(Text)
     end_time = mapped_column(DateTime)
-    price = mapped_column(ForeignKey(Work.price))
+    price = mapped_column(BigInteger)
     worker = mapped_column(ForeignKey(User.id))
-    owner = mapped_column(ForeignKey(Work.owner))
+    owner = mapped_column(ForeignKey(User.id))
 
 
 class Chat(Base):
