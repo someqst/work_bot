@@ -139,3 +139,7 @@ dont_metter.resize_keyboard = True
 remove_reply_kb = ReplyKeyboardRemove()
 
 
+admin_kb = InlineKeyboardBuilder()
+admin_kb.button(text='Выдать баланс employeer', callback_data='give_money_employeer')
+
+

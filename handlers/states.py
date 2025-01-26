@@ -25,3 +25,7 @@ class UserCreation(StatesGroup):
     select_role = State()
     enter_location = State()
     enter_about = State()
+
+
+class Admin(StatesGroup):
+    give_emp_balance = State()

@@ -1,10 +1,11 @@
 from uuid import uuid4
 from pytz import timezone
+from dateutil.relativedelta import relativedelta
 from datetime import datetime
 from database.models import User, Work, WorkProcess, Chat
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from data.config import settings
-from sqlalchemy import select, update, delete, insert, func, or_, and_
+from sqlalchemy import select, update, delete, insert, or_, and_, cast, String
 
 
 
@@ -136,10 +137,38 @@ class DataBase:
 
     @classmethod
     @connection
-    async def close_work(cls, work_id, session: AsyncSession = None) -> int:
+    async def close_work(cls, work_id, session: AsyncSession = None):
         await session.execute(delete(WorkProcess).where(WorkProcess.id == work_id))
         await session.execute(delete(Work).where(Work.id == work_id))
         await session.commit()
+
+
+    @classmethod
+    @connection
+    async def get_works_for_remind_1hour(cls, session: AsyncSession = None) -> list[WorkProcess] | None:
+        target_time = (datetime.now(timezone('Europe/Moscow')) + relativedelta(hours=1)).replace(tzinfo=None).strftime('%Y-%m-%d %H')
+        return (await session.execute(select(WorkProcess).filter(cast(WorkProcess.end_time, String).like(f'%{target_time}%')))).scalars().all()
+
+
+    @classmethod
+    @connection
+    async def get_works_for_remind_30min(cls, session: AsyncSession = None) -> list[WorkProcess] | None:
+        target_time = (datetime.now(timezone('Europe/Moscow')) + relativedelta(minutes=30)).replace(tzinfo=None).strftime('%Y-%m-%d %H:%M')
+        return (await session.execute(select(WorkProcess).filter(cast(WorkProcess.end_time, String).like(f'%{target_time}%')))).scalars().all()
+    
+
+    @classmethod
+    @connection
+    async def get_user_by_username(cls, username, session: AsyncSession = None) -> User:
+        return (await session.execute(select(User).where(User.username == username))).scalar_one_or_none()
+    
+
+    @classmethod
+    @connection
+    async def update_employeer_balance(cls, user_id, balance, session: AsyncSession = None) -> User:
+        await session.execute(update(User).where(User.id == user_id).values(balance_deposit = balance))
+        await session.commit()
+
 
 #  ------------- Employeer part --------------
 

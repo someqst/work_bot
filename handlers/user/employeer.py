@@ -48,15 +48,18 @@ async def enter_price(message: Message, state: FSMContext):
         return await message.answer('Введите число')
     
     user = await db.get_user(message.from_user.id)
-    if int(message.text) < user.balance_deposit:
+    
+    print(user.balance_deposit)
+    print(int(message.text))
+    if int(message.text) > user.balance_deposit:
         return await message.answer('Сначала пополните баланс на нужную сумму.')
     
-    await db.get_employeer_deposit(message.from_user.id, int(message.text))
     await state.update_data(price = message.text)
 
     if await is_changeble(state, message.from_user.id):
         return
 
+    await db.get_employeer_deposit(message.from_user.id, int(message.text))
     await message.answer('Введите заголовок, который увидит работник. *Не более 150 символов*', parse_mode='Markdown')
     await state.set_state(Employeer.insert_title)
 
