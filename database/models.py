@@ -16,7 +16,8 @@ class User(Base):
     last_usage = mapped_column(DateTime, default=datetime.now(timezone('Europe/Moscow')).replace(tzinfo=None))
     role = mapped_column(Text, default='worker')
     location = mapped_column(Text)
-    done_works = mapped_column(Text)
+    about = mapped_column(Text)
+    done_works = mapped_column(BigInteger, default=0)
     balance_earned = mapped_column(BigInteger, default=0)
     balance_deposit = mapped_column(BigInteger, default=0)
 
@@ -39,5 +40,12 @@ class WorkProcess(Base):
     id = mapped_column(ForeignKey(Work.id), primary_key=True)
     title = mapped_column(Text)
     end_time = mapped_column(DateTime)
-    price = mapped_column(DateTime)
+    price = mapped_column(ForeignKey(Work.price))
     worker = mapped_column(ForeignKey(User.id))
+    owner = mapped_column(ForeignKey(Work.owner))
+
+
+class Chat(Base):
+    __tablename__ = 'chat'
+    id = mapped_column(BigInteger, primary_key=True)
+    chat_with = mapped_column(BigInteger)

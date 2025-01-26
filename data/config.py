@@ -12,3 +12,5 @@ class Settings(BaseSettings):
     )
 
 settings = Settings()
+
+admins = (539937958,)
