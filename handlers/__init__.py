@@ -8,9 +8,9 @@ from handlers.admin import admin
 def handle_routers() -> Router:
     router = Router()
     router.include_routers(
+        user_creation.router,
         start.router,
         admin.router,
-        user_creation.router,
         done_work.router,
         support.router,
         worker.router,

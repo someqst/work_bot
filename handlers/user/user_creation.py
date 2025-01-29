@@ -21,6 +21,9 @@ async def select_first_role(call: CallbackQuery, state: FSMContext):
 
 @router.message(UserCreation.enter_location, F.text)
 async def location_entering(message: Message, state: FSMContext):
+    if '/start' in (message.text) or '/profile' in (message.text):
+        return await message.answer('Вам обязательно нужно ввести локацию.')
+    
     await state.update_data(location = (message.text).lower())
     role = (await state.get_data()).get('role')
 
@@ -32,6 +35,9 @@ async def location_entering(message: Message, state: FSMContext):
 
 @router.message(UserCreation.enter_about, F.text)
 async def about_entering(message: Message, state: FSMContext):
+    if '/start' in (message.text) or '/profile' in (message.text):
+        return await message.answer('Вам обязательно нужно ввести описание.')
+
     if len(message.text) > 3500:
         return await message.answer('Вы ввели более 3500 символов.')
     
