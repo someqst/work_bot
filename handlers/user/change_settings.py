@@ -1,7 +1,7 @@
 from aiogram import Router, F
 from aiogram.types import Message, CallbackQuery
 from loader import db, bot
-from data.buttons import settings_kb, dont_metter, remove_reply_kb
+from data.buttons import settings_kb, online_work, remove_reply_kb
 from handlers.states import EveryOne
 from aiogram.fsm.context import FSMContext
 
@@ -18,7 +18,7 @@ async def edit_user_settings(call: CallbackQuery):
 @router.callback_query(F.data == 'change_location')
 async def change_location(call: CallbackQuery, state: FSMContext):
     await call.answer()
-    await bot.send_message(call.from_user.id, 'Введите локацию', reply_markup=dont_metter)
+    await bot.send_message(call.from_user.id, 'Введите локацию', reply_markup=online_work)
     await state.set_state(EveryOne.change_location)
 
 

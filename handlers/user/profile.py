@@ -1,7 +1,7 @@
 from aiogram import F, Router
 from aiogram.types import Message, CallbackQuery
-from loader import bot, db
-from data.buttons import build_profile_kb, build_jobs_kb
+from loader import db
+from data.buttons import build_profile_kb
 from aiogram.filters import Command
 
 
@@ -40,23 +40,3 @@ f'''
 Рейтинг: *?*
 Описание: _{user.about if user.about else 'Нет'}_
 ''', reply_markup=kb.as_markup(), parse_mode='Markdown')
-
-
-
-# ----- Работодатель смотрит свои работы -------
-@router.callback_query(F.data == 'get_my_jobs_emp')
-async def get_my_jobs_emp(call: CallbackQuery):
-    await call.answer()
-    kb = await build_jobs_kb(call.from_user.id)
-    await call.message.edit_text('Выберите работу', reply_markup=kb.as_markup())
-
-
-
-@router.callback_query(F.data.startswith('emp_'))
-async def select_job(call: CallbackQuery):
-    await call.answer()
-    await bot.send_message(call.from_user.id, f'Ты выбрал работу {(call.data).split("_")[1]}')
-
-
-
-

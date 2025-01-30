@@ -3,7 +3,7 @@ from loader import db, bot
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 from handlers.states import UserCreation
-from data.buttons import dont_metter, remove_reply_kb, build_start_kb
+from data.buttons import online_work, remove_reply_kb, build_start_kb
 
 
 router = Router()
@@ -16,7 +16,7 @@ async def select_first_role(call: CallbackQuery, state: FSMContext):
     await state.update_data(role = (call.data).removeprefix('im_'))
 
     await state.set_state(UserCreation.enter_location)
-    return await bot.send_message(call.from_user.id, 'Выберите локацию', reply_markup=dont_metter)
+    return await bot.send_message(call.from_user.id, 'Выберите локацию', reply_markup=online_work)
 
 
 @router.message(UserCreation.enter_location, F.text)

@@ -197,6 +197,12 @@ class DataBase:
 
     @classmethod
     @connection
+    async def select_worker_jobs(cls, user_id, session: AsyncSession = None):
+        return (await session.execute(select(WorkProcess).filter(WorkProcess.worker == user_id))).scalars().all()
+    
+
+    @classmethod
+    @connection
     async def get_employeer_deposit(cls, user_id, price, session: AsyncSession = None):
         await session.execute(update(User).where(User.id == user_id).values(balance_deposit = User.balance_deposit - price))
         await session.commit()

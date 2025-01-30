@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from pytz import timezone
 from dateutil.relativedelta import relativedelta
 from aiogram import F, Router
@@ -6,7 +6,7 @@ from aiogram.types import Message, CallbackQuery
 from loader import bot, db
 from aiogram.fsm.context import FSMContext
 from handlers.states import Employeer, EveryOne
-from data.buttons import change_job_kb, dont_metter, remove_reply_kb, build_check_kb, build_chat_kb
+from data.buttons import change_job_kb, online_work, remove_reply_kb, build_check_kb, build_jobs_kb
 
 
 router = Router()
@@ -16,7 +16,7 @@ router = Router()
 @router.callback_query(F.data == 'add_work')
 async def add_work(call: CallbackQuery, state: FSMContext):
     await call.answer()
-    await bot.send_message(call.from_user.id, 'Введите локацию', reply_markup=dont_metter)
+    await bot.send_message(call.from_user.id, 'Введите локацию', reply_markup=online_work)
     await state.set_state(Employeer.insert_location)
 
 
@@ -176,3 +176,34 @@ async def join_chat_emp(call: CallbackQuery, state: FSMContext):
         await bot.send_message(call.from_user.id, 'Сообщение не отправилось работнику. Он не зайдет.')
 
 
+
+# ----- Работодатель смотрит свои работы -------
+@router.callback_query(F.data == 'get_my_jobs_emp')
+async def get_my_jobs_emp(call: CallbackQuery):
+    await call.answer()
+    kb = await build_jobs_kb(call.from_user.id, 'employeer')
+    await call.message.edit_text('Выберите работу', reply_markup=kb.as_markup())
+
+
+
+@router.callback_query(F.data.startswith('employeer_select_'))
+async def select_job(call: CallbackQuery):
+    await call.answer()
+    work_info = await db.get_work_by_id((call.data).split("_")[2])
+    work_process_info = await db.get_work_process_by_id((call.data).split("_")[2])
+    
+    if work_process_info:
+        worker = await db.get_user(work_process_info.worker)
+        remain_time: timedelta = (work_process_info.end_time - datetime.now(timezone('Europe/Moscow')).replace(tzinfo=None))
+    
+    await bot.send_message(call.from_user.id,
+f'''
+*{work_info.title}*
+
+Статус: {"открыта" if work_info.status == 'opened' else "в процессе... ⏱️"}
+
+{"Выполняет @" + worker.username if work_process_info else ''}
+
+{"Осталось времени: " + f"{int(remain_time.total_seconds() // 3600)} ч. " + f"{int(remain_time.total_seconds() % 3600 // 60)} мин" if work_process_info else ''}
+
+''', parse_mode='Markdown')

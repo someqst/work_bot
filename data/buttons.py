@@ -31,8 +31,10 @@ async def build_profile_kb(user_id, role: str) -> InlineKeyboardBuilder:
     profile_kb = InlineKeyboardBuilder()
     
     if role == 'worker':
+        jobs = await db.select_worker_jobs(user_id)
         profile_kb.button(text='Изменить настройки ⚙️', callback_data='edit_user_settings')
         profile_kb.button(text='Вывод средств 💰', callback_data='profile_call')
+        profile_kb.button(text=f'Активные работы ({len(jobs)})', callback_data='get_my_jobs_wrk')
         return profile_kb
     
     if role == 'employeer':
@@ -43,13 +45,19 @@ async def build_profile_kb(user_id, role: str) -> InlineKeyboardBuilder:
         return profile_kb
     
 
-async def build_jobs_kb(user_id) -> InlineKeyboardBuilder:
+async def build_jobs_kb(user_id, role: str) -> InlineKeyboardBuilder:
     jobs_kb = InlineKeyboardBuilder()
-    jobs = await db.select_employeer_jobs(user_id)
-    
+
+    if role == 'employeer':
+        jobs = await db.select_employeer_jobs(user_id)
+        role = 'employeer'
+    else:
+        jobs = await db.select_worker_jobs(user_id)
+        role = 'worker'
+
     if jobs:
         for job in jobs:
-            jobs_kb.button(text=f'{job.title[:30]}... - {job.price}', callback_data=f'emp_{job.id}')
+            jobs_kb.button(text=f'{job.title[:30]}... - {job.price}', callback_data=f'{role}_select_{job.id}')
     jobs_kb.adjust(1)
 
     jobs_kb.row(InlineKeyboardButton(text=f'Назад ◀️', callback_data=f'profile_call'))
@@ -134,8 +142,8 @@ settings_kb.button(text='Изменить описание профиля', call
 settings_kb.adjust(1)
 
 
-dont_metter = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Не важно')]])
-dont_metter.resize_keyboard = True
+online_work = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Онлайн')]])
+online_work.resize_keyboard = True
 
 remove_reply_kb = ReplyKeyboardRemove()
 

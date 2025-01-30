@@ -1,11 +1,13 @@
+from pytz import timezone
 from aiogram import F, Router
+from datetime import datetime, timedelta
 from aiogram.types import Message, CallbackQuery
-from database.models import Work
 from loader import db, bot
 from aiogram.fsm.context import FSMContext
-from handlers.states import Worker, EveryOne
+from handlers.states import Worker
 from data.buttons import (build_works_kb, build_ok_kb,
-                          build_approve_kb, build_chat_kb, build_done_work_kb)
+                          build_approve_kb, build_chat_kb,
+                          build_done_work_kb, build_jobs_kb)
 
 
 router = Router()
@@ -51,6 +53,7 @@ _{work.description}_
 async def get_work_for_done(call: CallbackQuery, state: FSMContext):
     await call.answer()
     await call.message.delete()
+    await bot.send_message(call.from_user.id, "Ожидайте, если работодатель одобрит вашу кандидатуру, мы дадим вам знать")
 
     data = await state.get_data()
     work_owner = data.get('work_owner')
@@ -123,3 +126,44 @@ async def join_chat_emp(call: CallbackQuery):
         await bot.send_message(employeer, 'Исполнитель вошел в диалог. Если захотите выйти из чата, пишите /exit')
     except:
         await bot.send_message(call.from_user.id, 'Сообщение не отправилось работнику. Он не зайдет.')
+
+
+# ----- Работник смотрит свои работы -------
+@router.callback_query(F.data == 'get_my_jobs_wrk')
+async def get_my_jobs_emp(call: CallbackQuery):
+    await call.answer()
+    kb = await build_jobs_kb(call.from_user.id, 'worker')
+    await call.message.edit_text('Выберите работу', reply_markup=kb.as_markup())
+
+
+
+@router.callback_query(F.data.startswith('worker_select_'))
+async def select_job(call: CallbackQuery):
+    await call.answer()
+    work_info = await db.get_work_by_id((call.data).split("_")[2])
+    work_process_info = await db.get_work_process_by_id((call.data).split("_")[2])
+
+    remain_time: timedelta = (work_process_info.end_time - datetime.now(timezone('Europe/Moscow')).replace(tzinfo=None))
+    print(remain_time)
+
+    try:
+        await bot.send_message(call.from_user.id,
+f'''
+Ты выбрал работу {work_info.id}
+
+*{work_info.title}*
+
+Осталось времени: {int(remain_time.total_seconds() // 3600)} ч, {int(remain_time.total_seconds() % 3600 // 60)} мин
+
+_{work_info.description}_
+''', parse_mode='Markdown')
+    except:
+        await bot.send_message(call.from_user.id,
+f'''
+{work_info.title}
+
+Осталось времени: {int(remain_time.total_seconds() // 3600)} ч, {int(remain_time.total_seconds() % 3600 // 60)} мин
+
+Описание:
+{work_info.description}
+''')
