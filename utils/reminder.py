@@ -14,7 +14,17 @@ async def remaind_about_work_1hour():
             await asyncio.sleep(1.5)
             sended = 0
         try:
-            await bot.send_message(work.worker, f'❗️Поторопитесь❗️\n\nУ вас остался *один час* до сдачи задания *"{work.title}"*.', parse_mode='Markdown')
+            await bot.send_message(work.worker,
+f'''❗️Поторопитесь❗️
+
+У вас остался *один час* до сдачи задания
+
+*"{work.title}"*
+
+Закрыть задачу можно по пути:
+/profile -> Активные работы
+
+''', parse_mode='Markdown')
             sended += 1
         except:
             pass
@@ -32,7 +42,17 @@ async def remaind_about_work_30mins():
             await asyncio.sleep(1.5)
             sended = 0
         try:
-            await bot.send_message(work.worker, f'❗️Поторопитесь❗️\n\nУ вас осталось *30 минут* до сдачи задания *"{work.title}"*.', parse_mode='Markdown')
+            await bot.send_message(work.worker,
+f'''❗️Поторопитесь❗️
+
+У вас осталось *30 минут* до сдачи задания
+
+*"{work.title}"*
+
+Закрыть задачу можно по пути:
+/profile -> Активные работы
+
+''', parse_mode='Markdown')
             sended += 1
         except:
             pass

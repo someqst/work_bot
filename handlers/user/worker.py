@@ -7,7 +7,7 @@ from aiogram.fsm.context import FSMContext
 from handlers.states import Worker
 from data.buttons import (build_works_kb, build_ok_kb,
                           build_approve_kb, build_chat_kb,
-                          build_done_work_kb, build_jobs_kb)
+                          build_done_work_kb, build_jobs_kb, build_check_kb)
 
 
 router = Router()
@@ -144,7 +144,12 @@ async def select_job(call: CallbackQuery):
     work_process_info = await db.get_work_process_by_id((call.data).split("_")[2])
 
     remain_time: timedelta = (work_process_info.end_time - datetime.now(timezone('Europe/Moscow')).replace(tzinfo=None))
-    print(remain_time)
+    
+    kb = await build_check_kb(work_info.id, work_info.owner)
+    if work_info.status == 'in_progress':
+        remain_time_text = f"Осталось времени: {int(remain_time.total_seconds() // 3600)} ч, {int(remain_time.total_seconds() % 3600 // 60)} мин"
+    else:
+        remain_time_text = ''
 
     try:
         await bot.send_message(call.from_user.id,
@@ -153,17 +158,17 @@ f'''
 
 *{work_info.title}*
 
-Осталось времени: {int(remain_time.total_seconds() // 3600)} ч, {int(remain_time.total_seconds() % 3600 // 60)} мин
+{remain_time_text}
 
 _{work_info.description}_
-''', parse_mode='Markdown')
+''', parse_mode='Markdown', reply_markup=kb.as_markup())
     except:
         await bot.send_message(call.from_user.id,
 f'''
 {work_info.title}
 
-Осталось времени: {int(remain_time.total_seconds() // 3600)} ч, {int(remain_time.total_seconds() % 3600 // 60)} мин
+{remain_time_text}
 
 Описание:
 {work_info.description}
-''')
+''', reply_markup=kb.as_markup())
